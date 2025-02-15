@@ -29,9 +29,18 @@ app.get("/room", (req, res) => {
 io.on("connection", (socket) => {
   socket.on("join-room", (roomId, username, userId) => {
 
+    //call signal
     socket.join(roomId);
     socket.to(roomId).broadcast.emit("user-connected", {userId, username});
 
+    socket.on("username", (data) => {
+      console.log(data);
+      io.to(roomId).broadcast.emit("setUsername", { data });
+    }); 
+
+
+
+    //message  and other signal;
     socket.on("message", (message) => {
       io.to(roomId).emit("createMessage", message);
     });
@@ -40,6 +49,7 @@ io.on("connection", (socket) => {
       console.log(muted);
       io.to(roomId).emit("update-mute-status", { muted, userId });
     });
+    
     
 
     socket.on("leavemeeting", (userId) => {
