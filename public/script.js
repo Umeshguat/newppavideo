@@ -84,8 +84,8 @@ navigator.mediaDevices
       }
     });
 
-    socket.on('user-leaved-meeting', (userId) => {
-      console.log(userId);
+    socket.on('user-leaved-meeting', ({ muted, userId }) => {
+    
       let userDiv = document.getElementById(userId);
       console.log(userDiv);
       if (userDiv) {
@@ -95,8 +95,18 @@ navigator.mediaDevices
         }
       }
     })
-
-
+    socket.on('startshare', ({ share}) => {
+      let userDiv = document.getElementById(share.userId);
+      if (userDiv) {
+        let parentDiv = userDiv.closest('.videos_data');
+        if (parentDiv) {
+            parentDiv.classList.add('screen-share');
+        }
+      }
+      
+      
+    });
+    
 
   });
 
@@ -158,13 +168,12 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   }
 
   videoEl.srcObject = stream;
-  videoEl.setAttribute('data-stream-id', stream.id);
+  videoEl.setAttribute('data-stream-id', peer.id);
   const streamIdDiv = videoContainer.querySelectorAll(".user_name")[0]; // First div for stream ID
   const muteStatusDiv = videoContainer.querySelectorAll(".user_name")[1]; // Second div for mute status
 
   // Set the stream ID in the first div
   streamIdDiv.innerText = streamuser;
-
 
   // Function to update mute status
   // const updateMuteStatus = () => {
@@ -193,6 +202,9 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 
 const screenShare = () => {
 
+
+  socket.emit("screen-share", { share: true, userId: peer.id });
+
   navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
   .then(screenStream => {
     const videoTrack = screenStream.getVideoTracks()[0];
@@ -204,6 +216,7 @@ const screenShare = () => {
         sender.replaceTrack(videoTrack);
 
         videoTrack.onended = () => {
+      
           sender.replaceTrack(originalTrack); 
         };
       }
@@ -290,10 +303,6 @@ const addStreamDiv = () => {
   // userName2Div.textContent = '';
   videosDataDiv.appendChild(userName2Div);
 
-  // const pinIcon = document.createElement('div');
-  // userName2Div.classList.add('pin_icon');
-  // userName2Div.add('pinOnclick()');
-  // videosDataDiv.appendChild(userName2Div);
 
   return videosDataDiv;
 
@@ -307,5 +316,6 @@ const leaveMeeting = () => {
   window.location.href = 'http://localhost:3030/';
   socket.emit("leavemeeting", peer.id);
 }
+
 
 

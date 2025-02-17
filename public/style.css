@@ -9,10 +9,16 @@ body {
   height: 100%;
   font-family: "Roboto", sans-serif;
 }
+.pin_icone {
+  margin: -42px;
+  color: white;
+}
 .user_name {
   margin: -42px;
   color: white;
 }
+
+
 .videos_data {
   text-align: center;
   padding-bottom:50px;
