@@ -100,7 +100,7 @@ navigator.mediaDevices
       if (userDiv) {
         let parentDiv = userDiv.closest('.videos_data');
         if (parentDiv) {
-            parentDiv.classList.add('screen-share');
+          parentDiv.classList.replace('videos_data','screen-share');
         }
       }
       
