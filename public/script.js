@@ -18,7 +18,7 @@ var peer = new Peer(undefined, {
 });
 
 let myVideoStream;
-let currentCall;
+let activeCalls = []; 
 let peerid;
 
 var getUserMedia =
@@ -80,7 +80,7 @@ navigator.mediaDevices
       user = muted.userId
       let userDiv = document.getElementById(user);
       if (userDiv) {
-        userDiv.innerText = muted.muted;
+        userDiv.innerHTML = muted.muted;
       }
     });
 
@@ -122,7 +122,7 @@ peer.on("call", function (call) {
       console.log("Failed to get local stream", err);
     }
   );
-  currentCall = call;
+  activeCalls.push(call);
 });
 
 peer.on("open", (id) => {
@@ -140,7 +140,7 @@ const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
   call.on("stream", (userVideoStream) => {
     addVideoStream(video, userVideoStream, call.peer, remoteUsername);
   });
-  currentCall = call;
+  activeCalls.push(call);
 };
 
 const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
@@ -170,7 +170,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   // const updateMuteStatus = () => {
   const audioTracks = stream.getAudioTracks();
   if (audioTracks.length > 0) {
-    muteStatusDiv.innerText = audioTracks[0].enabled ? "Unmute" : "Mute";
+    muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
     muteStatusDiv.id = peerid;
   } else {
     muteStatusDiv.innerText = "No Audio";
@@ -194,16 +194,22 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 const screenShare = () => {
 
   navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-    .then(screenStream => {
-      const videoTrack = screenStream.getVideoTracks()[0];
-      const sender = currentCall.peerConnection.getSenders().find(s => s.track.kind === 'video');
-      sender.replaceTrack(videoTrack);
+  .then(screenStream => {
+    const videoTrack = screenStream.getVideoTracks()[0];
 
-      videoTrack.onended = () => {
-        sender.replaceTrack(myVideoStream.getVideoTracks()[0]);
-      };
-    })
-    .catch(err => console.error('Error sharing screen:', err));
+    activeCalls.forEach(call => {
+      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+      if (sender) { 
+        const originalTrack = sender.track; 
+        sender.replaceTrack(videoTrack);
+
+        videoTrack.onended = () => {
+          sender.replaceTrack(originalTrack); 
+        };
+      }
+    });
+  })
+  .catch(err => console.error('Error sharing screen:', err));
 
 }
 
@@ -227,13 +233,13 @@ const muteUnmute = () => {
   if (enabled) {
     myVideoStream.getAudioTracks()[0].enabled = false;
     setUnmuteButton();
-    myMuteStatusDiv.innerText = "Muted";
-    socket.emit("mute-status-changed", { muted: 'Muted', userId: myMuteStatusDiv.id });
+    myMuteStatusDiv.innerText = 'Muted';
+    socket.emit("mute-status-changed", { muted: '<i class="unmute fa fa-microphone-slash"></i>', userId: myMuteStatusDiv.id });
   } else {
     setMuteButton();
-    myMuteStatusDiv.innerText = "Unmuted";
+    myMuteStatusDiv.innerText = 'Unmuted';
     myVideoStream.getAudioTracks()[0].enabled = true;
-    socket.emit("mute-status-changed", { muted: 'Unmuted', userId: myMuteStatusDiv.id });
+    socket.emit("mute-status-changed", { muted: '<i class="fa fa-microphone"></i>', userId: myMuteStatusDiv.id });
   }
 };
 
@@ -281,8 +287,13 @@ const addStreamDiv = () => {
 
   const userName2Div = document.createElement('div');
   userName2Div.classList.add('user_name');
-  userName2Div.textContent = 'Mute/Unmute';
+  // userName2Div.textContent = '';
   videosDataDiv.appendChild(userName2Div);
+
+  // const pinIcon = document.createElement('div');
+  // userName2Div.classList.add('pin_icon');
+  // userName2Div.add('pinOnclick()');
+  // videosDataDiv.appendChild(userName2Div);
 
   return videosDataDiv;
 
