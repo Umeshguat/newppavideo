@@ -185,7 +185,8 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   if (totalUsers > 1) {
     for (let index = 0; index < totalUsers; index++) {
       document.getElementsByTagName("video")[index].style.width =
-        100 / totalUsers + "%";
+      // 100 / totalUsers + "%";
+        "100%"
     }
   }
 };
