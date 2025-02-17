@@ -20,6 +20,8 @@ var peer = new Peer(undefined, {
 let myVideoStream;
 let activeCalls = []; 
 let peerid;
+let  screenSharing = false;
+let screenShareStream = null;
 
 var getUserMedia =
   navigator.getUserMedia ||
@@ -99,12 +101,12 @@ navigator.mediaDevices
       let userDiv = document.getElementById(share.userId);
       if (userDiv) {
         let parentDiv = userDiv.closest('.videos_data');
-        if (parentDiv) {
+        if (parentDiv && share.share == true) {
           parentDiv.classList.replace('videos_data','screen-share');
+        }else{
+          parentDiv.classList.replace('screen-share', 'screen-share');
         }
-      }
-      
-      
+      }    
     });
     
 
@@ -151,6 +153,13 @@ const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
     addVideoStream(video, userVideoStream, call.peer, remoteUsername);
   });
   activeCalls.push(call);
+
+  if (screenSharing && screenShareStream) {
+    const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+    if (sender) {
+      sender.replaceTrack(screenShareStream.getVideoTracks()[0]);
+    }
+  }
 };
 
 const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
@@ -202,21 +211,22 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 
 const screenShare = () => {
 
-
-  socket.emit("screen-share", { share: true, userId: peer.id });
-
+  screenSharing = true;
   navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
   .then(screenStream => {
+    screenShareStream = screenStream;
     const videoTrack = screenStream.getVideoTracks()[0];
 
     activeCalls.forEach(call => {
       const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
       if (sender) { 
+        
         const originalTrack = sender.track; 
         sender.replaceTrack(videoTrack);
 
         videoTrack.onended = () => {
-      
+          screenShareStream = null;
+          screenSharing = false;
           sender.replaceTrack(originalTrack); 
         };
       }
@@ -226,6 +236,30 @@ const screenShare = () => {
 
 }
 
+
+function stopScreenSharing() {
+  if (!screenSharing) return;
+  let videoTrack = local_stream.getVideoTracks()[0];
+  if (peer) {
+    activeCalls.forEach(call => {
+      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+      if (sender) {
+        const originalTrack = sender.track; // Save the original track to restore later
+        sender.replaceTrack(videoTrack); 
+
+        videoTrack.onended = () => {
+          sender.replaceTrack(originalTrack); 
+        };
+      }
+    });
+
+  }
+  screenStream.getTracks().forEach(function (track) {
+      track.stop();
+  });
+  socket.emit("screen-share", { share: false, userId: peer.id });
+  screenSharing = false
+}
 
 
 const playStop = () => {
