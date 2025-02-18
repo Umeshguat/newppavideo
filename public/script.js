@@ -205,7 +205,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
     muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
     muteStatusDiv.id = peerid;
   } else {
-    muteStatusDiv.innerText = '<i class="fa fa-microphone"></i>';
+    muteStatusDiv.innerHTML = '<i class="fa fa-microphone"></i>';
   }
   // };
   videoEl.addEventListener("loadedmetadata", () => {
