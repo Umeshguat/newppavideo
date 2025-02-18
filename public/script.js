@@ -12,9 +12,12 @@ console.log('Username:', username);
 // console.log(username);
 
 var peer = new Peer(undefined, {
-  path: "/peerjs",
-  host: "/",
-  port: "3030",
+  // path: "/peerjs",
+  // host: "/",
+  // port: "3030",
+  host: '0.peerjs.com',
+  port: 443,
+  secure: true,
 });
 
 let myVideoStream;
