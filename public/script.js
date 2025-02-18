@@ -36,6 +36,7 @@ var getUserMedia =
     audio: false,
   })
   .then(function(myvideostream) {
+    const myVideoDiv = addStreamDiv();
     addVideoStream(myVideoDiv, myvideostream, peer.id, username);
   })
   .catch(function(error) {
@@ -51,8 +52,7 @@ navigator.mediaDevices
   })
   .then((stream) => {
     myVideoStream = stream;
-    const myVideoDiv = addStreamDiv();
-  
+
     // peer.on("call", (call) => {
     //   call.answer(stream, {
     //     metadata: {
