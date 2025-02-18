@@ -22,6 +22,7 @@ body {
 .videos_data {
   text-align: center;
   padding-bottom:50px;
+  order: 2;
 }
 #video-grid {
   display: flex;
@@ -152,3 +153,52 @@ video{
 
 
 
+
+
+
+/* ======================== */
+.main__videos {
+  display: flex;
+  height: 100%;
+  gap: 10px;
+}
+
+.screen-share-active {
+  display: flex;
+  width: 100%;
+}
+
+.screen-share-container {
+  flex: 4;
+  /* 80% width */
+  background: black;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.other-videos {
+  flex: 1;
+  /* 20% width */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+/* .videos_data {
+  position: absolute;
+  right: 27%;
+} */
+
+.screen-share{
+  width: -webkit-fill-available;
+  height: -webkit-fill-available;
+  order: 1;
+}
+.screen-share > video{
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+  }
