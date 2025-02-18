@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
 
     //screen share signal
     socket.on("screen-share", ( share, userId) => {
-    
+      console.log(share);
       io.to(roomId).emit("startshare", { share, userId });
     }); 
 

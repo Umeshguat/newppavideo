@@ -86,7 +86,7 @@ navigator.mediaDevices
       }
     });
 
-    socket.on('user-leaved-meeting', ({ muted, userId }) => {
+    socket.on('user-leaved-meeting', (userId) => {
     
       let userDiv = document.getElementById(userId);
       console.log(userDiv);
@@ -104,7 +104,7 @@ navigator.mediaDevices
         if (parentDiv && share.share == true) {
           parentDiv.classList.replace('videos_data','screen-share');
         }else{
-          parentDiv.classList.replace('screen-share', 'screen-share');
+          parentDiv.classList.replace('screen-share', 'videos_data');
         }
       }    
     });
@@ -212,6 +212,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 const screenShare = () => {
 
   screenSharing = true;
+  socket.emit("screen-share", { share: true, userId: peer.id });
   navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
   .then(screenStream => {
     screenShareStream = screenStream;
