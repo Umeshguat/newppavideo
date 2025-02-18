@@ -12,9 +12,12 @@ console.log('Username:', username);
 // console.log(username);
 
 var peer = new Peer(undefined, {
-  path: "/peerjs",
-  host: "/",
-  port: "3030",
+  // path: "/peerjs",
+  // host: "/",
+  // port: "3030",
+  host: '0.peerjs.com',
+  port: 443,
+  secure: true,
 });
 
 let myVideoStream;
@@ -28,31 +31,18 @@ var getUserMedia =
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia;
 
+  
 navigator.mediaDevices
   .getUserMedia({
     video: true,
-    audio: true,
+    audio: { echoCancellation: true },
   })
   .then((stream) => {
     myVideoStream = stream;
     const myVideoDiv = addStreamDiv();
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
-
-
-    // peer.on("call", (call) => {
-    //   call.answer(stream, {
-    //     metadata: {
-    //       name: username
-    //     }
-    //   });
-    //   const video = addStreamDiv();
-    //   const reamname = call.metadata.name;
-    //   console.log(reamname);
-    //   call.on("stream", (userVideoStream) => {
-    //     addVideoStream(video, userVideoStream, call.peer, reamname);
-    //   });
-    // });
+    
 
     socket.on("user-connected", (data) => {
       const userId = data.userId;
@@ -86,8 +76,8 @@ navigator.mediaDevices
       }
     });
 
-    socket.on('user-leaved-meeting', ({ muted, userId }) => {
-
+    socket.on('user-leaved-meeting', (userId) => {
+    
       let userDiv = document.getElementById(userId);
       console.log(userDiv);
       if (userDiv) {
@@ -112,6 +102,8 @@ navigator.mediaDevices
 
 
   });
+
+  
 
 
 
@@ -166,11 +158,11 @@ const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
 const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 
   if (!peerid) {
-    //console.log('not');//
     peerid = peer.id;
   }
 
   const videoEl = videoContainer.querySelector("video");
+  
 
   if (!videoEl) {
     console.error("No video element found inside the video container");
@@ -192,7 +184,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
     muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
     muteStatusDiv.id = peerid;
   } else {
-    muteStatusDiv.innerText = "No Audio";
+    muteStatusDiv.innerText = '<i class="fa fa-microphone"></i>';
   }
   // };
   videoEl.addEventListener("loadedmetadata", () => {
