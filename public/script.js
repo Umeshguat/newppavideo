@@ -102,7 +102,8 @@ navigator.mediaDevices
       if (userDiv) {
         let parentDiv = userDiv.closest('.videos_data');
         if (parentDiv && share.share == true) {
-          parentDiv.classList.replace('videos_data','screen-share');
+          // parentDiv.classList.replace('videos_data','screen-share');
+          parentDiv.classList.add('screen-share');
         }else{
           parentDiv.classList.replace('screen-share', 'screen-share');
         }
@@ -212,6 +213,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 const screenShare = () => {
 
   screenSharing = true;
+  socket.emit("screen-share", { share: true, userId: peer.id });
   navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
   .then(screenStream => {
     screenShareStream = screenStream;
