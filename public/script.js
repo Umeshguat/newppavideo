@@ -31,41 +31,16 @@ var getUserMedia =
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia;
 
-  navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: false,
-  })
-  .then(function(myvideostream) {
-    const myVideoDiv = addStreamDiv();
-    addVideoStream(myVideoDiv, myvideostream, peer.id, username);
-  })
-  .catch(function(error) {
-
-    console.error('Error accessing media devices.', error);
-  });
   
-
 navigator.mediaDevices
   .getUserMedia({
     video: true,
-    audio: true,
+    audio: { echoCancellation: true },
   })
   .then((stream) => {
     myVideoStream = stream;
-
-    // peer.on("call", (call) => {
-    //   call.answer(stream, {
-    //     metadata: {
-    //       name: username
-    //     }
-    //   });
-    //   const video = addStreamDiv();
-    //   const reamname = call.metadata.name;
-    //   console.log(reamname);
-    //   call.on("stream", (userVideoStream) => {
-    //     addVideoStream(video, userVideoStream, call.peer, reamname);
-    //   });
-    // });
+    const myVideoDiv = addStreamDiv();
+    addVideoStream(myVideoDiv, stream, peer.id, username);
 
     socket.on("user-connected", (data) => {
       const userId = data.userId;
@@ -205,7 +180,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
     muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
     muteStatusDiv.id = peerid;
   } else {
-    muteStatusDiv.innerHTML = '<i class="fa fa-microphone"></i>';
+    muteStatusDiv.innerText = '<i class="fa fa-microphone"></i>';
   }
   // };
   videoEl.addEventListener("loadedmetadata", () => {
