@@ -42,6 +42,8 @@ navigator.mediaDevices
     const myVideoDiv = addStreamDiv();
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
+    
+
     socket.on("user-connected", (data) => {
       const userId = data.userId;
       let name = data.username;
@@ -101,6 +103,8 @@ navigator.mediaDevices
 
   });
 
+  
+
 
 
 peer.on("call", function (call) {
@@ -154,11 +158,11 @@ const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
 const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 
   if (!peerid) {
-    //console.log('not');//
     peerid = peer.id;
   }
 
   const videoEl = videoContainer.querySelector("video");
+  
 
   if (!videoEl) {
     console.error("No video element found inside the video container");
