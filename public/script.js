@@ -31,6 +31,19 @@ var getUserMedia =
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia;
 
+  navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: false,
+  })
+  .then(function(myvideostream) {
+    addVideoStream(myVideoDiv, myvideostream, peer.id, username);
+  })
+  .catch(function(error) {
+
+    console.error('Error accessing media devices.', error);
+  });
+  
+
 navigator.mediaDevices
   .getUserMedia({
     video: true,
@@ -39,10 +52,7 @@ navigator.mediaDevices
   .then((stream) => {
     myVideoStream = stream;
     const myVideoDiv = addStreamDiv();
-    addVideoStream(myVideoDiv, stream, peer.id, username);
-
-
-
+  
     // peer.on("call", (call) => {
     //   call.answer(stream, {
     //     metadata: {
