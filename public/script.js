@@ -5,7 +5,7 @@ const all_messages = document.getElementById("all_messages");
 const main__chat__window = document.getElementById("main__chat__window");
 const videoGrid = document.getElementById("video-grid");
 const username = document.getElementById("username").value;
-const myVideo = document.createElement("video");  
+const myVideo = document.createElement("video");
 myVideo.muted = true;
 
 console.log('Username:', username);
@@ -21,9 +21,9 @@ var peer = new Peer(undefined, {
 });
 
 let myVideoStream;
-let activeCalls = []; 
+let activeCalls = [];
 let peerid;
-let  screenSharing = false;
+let screenSharing = false;
 let screenShareStream = null;
 
 var getUserMedia =
@@ -87,19 +87,19 @@ navigator.mediaDevices
         }
       }
     })
-    socket.on('startshare', ({ share}) => {
+    socket.on('startshare', ({ share }) => {
       let userDiv = document.getElementById(share.userId);
       if (userDiv) {
         let parentDiv = userDiv.closest('.videos_data');
         if (parentDiv && share.share == true) {
           // parentDiv.classList.replace('videos_data','screen-share');
           parentDiv.classList.add('screen-share');
-        }else{
-          parentDiv.classList.replace('screen-share', 'videos_data');
+        } else {
+          parentDiv.classList.replace('screen-share', 'screen-share');
         }
-      }    
+      }
     });
-    
+
 
   });
 
@@ -114,7 +114,7 @@ peer.on("call", function (call) {
     { video: true, audio: true },
     function (stream) {
       call.answer(stream, {
-        metadata:localuser
+        metadata: localuser
       });
       const video = addStreamDiv();
       const remoteUsername = call.metadata.name;
@@ -137,9 +137,9 @@ peer.on("open", (id) => {
 // CHAT
 
 const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
-  console.log('connect:',remoteUsername);
+  console.log('connect:', remoteUsername);
   var call = peer.call(userId, streams, {
-    metadata:mydata
+    metadata: mydata
   });
   var video = addStreamDiv();
   call.on("stream", (userVideoStream) => {
@@ -196,7 +196,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   if (totalUsers > 1) {
     for (let index = 0; index < totalUsers; index++) {
       document.getElementsByTagName("video")[index].style.width =
-      // 100 / totalUsers + "%";
+        // 100 / totalUsers + "%";
         "100%"
     }
   }
@@ -207,26 +207,26 @@ const screenShare = () => {
   screenSharing = true;
   socket.emit("screen-share", { share: true, userId: peer.id });
   navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-  .then(screenStream => {
-    screenShareStream = screenStream;
-    const videoTrack = screenStream.getVideoTracks()[0];
+    .then(screenStream => {
+      screenShareStream = screenStream;
+      const videoTrack = screenStream.getVideoTracks()[0];
 
-    activeCalls.forEach(call => {
-      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-      if (sender) { 
-        
-        const originalTrack = sender.track; 
-        sender.replaceTrack(videoTrack);
+      activeCalls.forEach(call => {
+        const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+        if (sender) {
 
-        videoTrack.onended = () => {
-          screenShareStream = null;
-          screenSharing = false;
-          sender.replaceTrack(originalTrack); 
-        };
-      }
-    });
-  })
-  .catch(err => console.error('Error sharing screen:', err));
+          const originalTrack = sender.track;
+          sender.replaceTrack(videoTrack);
+
+          videoTrack.onended = () => {
+            screenShareStream = null;
+            screenSharing = false;
+            sender.replaceTrack(originalTrack);
+          };
+        }
+      });
+    })
+    .catch(err => console.error('Error sharing screen:', err));
 
 }
 
@@ -239,17 +239,17 @@ function stopScreenSharing() {
       const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
       if (sender) {
         const originalTrack = sender.track; // Save the original track to restore later
-        sender.replaceTrack(videoTrack); 
+        sender.replaceTrack(videoTrack);
 
         videoTrack.onended = () => {
-          sender.replaceTrack(originalTrack); 
+          sender.replaceTrack(originalTrack);
         };
       }
     });
 
   }
   screenStream.getTracks().forEach(function (track) {
-      track.stop();
+    track.stop();
   });
   socket.emit("screen-share", { share: false, userId: peer.id });
   screenSharing = false

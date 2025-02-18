@@ -58,12 +58,13 @@
     }
 
     .btn-switch {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      text-decoration: none;
-    }
+    background-color: #007bff;
+    color: white;
+    padding: 6px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    border: none;
+}
 
     .row {
       display: flex;
@@ -76,6 +77,21 @@
     width: max-content;
     margin-bottom: 30px;
   }
+  .joinRoom  label{
+    width: 70px;
+
+
+  }
+
+  .roomIdInput{
+          border: 1px solid;
+          border-color: rgba(0, 0, 0, 0.2);
+          border-radius: 8px;
+          height: 40px;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+          padding-left: 10px;
+    }
+
   </style>
 </head>
 
@@ -108,11 +124,11 @@
       <div class="joinRoom">
         <div class="mb-2">
           <label for="">Room Id</label>
-          <input type="text" id="room-id" name="room" value="123456789" >
+          <input type="text" id="room-id" name="room" value="123456789" class="roomIdInput">
         </div>
         <div>
-          <label for="">Name</label>&nbsp;&nbsp;&nbsp;&nbsp;
-          <input type="text" id="room-id" value="vikas" name="username">
+          <label for="">Name</label>
+          <input type="text" id="room-id" value="vikas" name="username"  class="roomIdInput">
         </div>
       </div>
 

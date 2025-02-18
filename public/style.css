@@ -37,7 +37,7 @@ video {
   display: block;
   flex: 1;
   object-fit: cover;
-  border: 5px solid #e5dfdf;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   max-width: 600px;
   color: #d2d2d2;
 }
@@ -197,8 +197,28 @@ video{
   width: -webkit-fill-available;
   height: -webkit-fill-available;
   order: 1;
+  display: flex;
+  justify-content: center;
 }
 .screen-share > video{
     width: -webkit-fill-available;
     height: -webkit-fill-available;
+    
   }
+
+    .screen-share > .user_name{
+      display: none;
+    }
+
+
+   /* .user_name{
+      position: absolute;
+      right: 10px;
+      bottom: 0;
+      transform: translate(-100%, -200%);
+    }
+
+    .videos_data{
+      position: relative;
+    } */
+
