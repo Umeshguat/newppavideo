@@ -36,18 +36,11 @@ navigator.mediaDevices
   })
   .then((stream) => {
     myVideoStream = stream;
-<<<<<<< HEAD
-    const myVideoDiv = addStreamDiv();
+    const myVideoDiv = addStreamDiv(true);
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
 
 
-=======
-    const myVideoDiv = addStreamDiv(true);
-    addVideoStream(myVideoDiv, stream,  peerid, username);
-    
-    
->>>>>>> a819bda (muted videop)
     socket.on("user-connected", (data) => {
       const userId = data.userId;
       const remoteUsername = data.username;
