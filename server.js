@@ -17,6 +17,9 @@ app.use("/peerjs", peerServer);
 app.get("/", (req, res) => {
   res.render("joincall");
 });
+app.get("/gmeet", (req, res) => {
+  res.render("gmeet", { roomId1: req.query.room, username1: req.query.username });
+});
 
 app.get("/", (req, rsp) => {
   rsp.redirect(`/${uuidv4()}`);
