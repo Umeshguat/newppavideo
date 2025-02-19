@@ -31,7 +31,7 @@ var getUserMedia =
   navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia;
 
-  
+
 navigator.mediaDevices
   .getUserMedia({
     video: true,
@@ -42,7 +42,7 @@ navigator.mediaDevices
     const myVideoDiv = addStreamDiv();
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
-    
+
 
     socket.on("user-connected", (data) => {
       const userId = data.userId;
@@ -77,7 +77,7 @@ navigator.mediaDevices
     });
 
     socket.on('user-leaved-meeting', (userId) => {
-    
+
       let userDiv = document.getElementById(userId);
       console.log(userDiv);
       if (userDiv) {
@@ -103,7 +103,7 @@ navigator.mediaDevices
 
   });
 
-  
+
 
 
 
@@ -162,7 +162,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   }
 
   const videoEl = videoContainer.querySelector("video");
-  
+
 
   if (!videoEl) {
     console.error("No video element found inside the video container");
