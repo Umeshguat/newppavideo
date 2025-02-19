@@ -37,6 +37,7 @@ navigator.mediaDevices
   .then((stream) => {
     myVideoStream = stream;
     const myVideoDiv = addStreamDiv(true);
+
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
 
