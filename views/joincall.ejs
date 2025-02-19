@@ -7,8 +7,7 @@
   <title>Vikas Sharma Scrum Meeting Call</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     .meet-container {
@@ -20,11 +19,23 @@
     .video-box {
       background: #222;
       color: white;
-      padding: 40px;
       border-radius: 10px;
-      text-align: center;
       position: relative;
-      height: 300px;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .video-box video {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
     }
 
     .video-box .controls {
@@ -43,74 +54,63 @@
       border-radius: 50%;
     }
 
-    .profile-section {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .profile-section img {
-      width: 50px;
-      border-radius: 50%;
-    }
-
     .action-buttons {
       text-align: center;
     }
 
     .btn-switch {
-    background-color: #007bff;
-    color: white;
-    padding: 6px 25px;
-    border-radius: 50px;
-    text-decoration: none;
-    border: none;
-}
+      background-color: #007bff;
+      color: white;
+      padding: 6px 25px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: none;
+    }
 
     .row {
       display: flex;
       align-items: center;
       margin-top: 100px;
     }
-    .joinRoom{
-    margin-right: auto;
-    margin-left: auto;
-    width: max-content;
-    margin-bottom: 30px;
-  }
-  .joinRoom  label{
-    width: 70px;
 
+    .joinRoom {
+      margin-right: auto;
+      margin-left: auto;
+      width: max-content;
+      margin-bottom: 30px;
+    }
+    .joinRoom label {
+      width: 75px;
 
-  }
-
-  .roomIdInput{
-          border: 1px solid;
-          border-color: rgba(0, 0, 0, 0.2);
-          border-radius: 8px;
-          height: 40px;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-          padding-left: 10px;
     }
 
+    .roomIdInput {
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      height: 40px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      padding-left: 10px;
+    
+    }
   </style>
 </head>
 
 <body>
 
   <div class="container meet-container">
-    
     <div class="row topD">
       <!-- Left side: Video Box -->
       <div class="col-md-7">
         <div class="video-box">
-          <h5>
-           Vikas sharma
-          </h5>
-          <p>Camera is off</p>
-        <div class="controls">
-          <button class="btn btn-danger"><i class="fa-solid fa-microphone-slash"></i></button>
-          <button class="btn btn-danger"><i class="fa-solid fa-video-slash"></i></button>
-        </div>
+          <h5 id="username-display">Vikas Sharma</h5>
+          <p id="camera-status">Camera is off</p>
+          <video id="videoElement" autoplay></video>
+          <div class="controls">
+            <button id="toggle-mic" class="btn btn-danger"><i id="mic-icon"
+                class="fa-solid fa-microphone-slash"></i></button>
+            <button id="toggle-camera" class="btn btn-danger"><i id="camera-icon"
+                class="fa-solid fa-video-slash"></i></button>
+          </div>
         </div>
       </div>
 
@@ -118,101 +118,85 @@
       <div class="col-md-5">
         <div class="text-center">
           <h3>Vikas Sharma Scrum Meeting Call</h3>
-          <p>Vikas Sharma , Mukesh Kumar, Rudhir Ingale and 2 more are in this call</p>
+          <p>Vikas Sharma, Mukesh Kumar, Rudhir Ingale and 2 more are in this call</p>
         </div>
-      <form action="/room">
-      <div class="joinRoom">
-        <div class="mb-2">
-          <label for="">Room Id</label>
-          <input type="text" id="room-id" name="room" value="123456789" class="roomIdInput">
-        </div>
-        <div>
-          <label for="">Name</label>
-          <input type="text" id="room-id" value="vikas" name="username"  class="roomIdInput">
-        </div>
-      </div>
+        <form action="/room">
+        <!-- <form action="/gmeet"> -->
+          <div class="joinRoom">
+            <div class="mb-2">
+              <label for="room-id" >Room Id</label>
+              <input type="text" id="room-id" name="room" value="123456789" class="roomIdInput">
+            </div>
+            <div>
+              <label for="username" >Name</label>
+              <input type="text" id="username" value="vikas" name="username" class="roomIdInput">
+            </div>
+          </div>
 
-        <div class="action-buttons">
-          <button  type="submit"  class="btn-switch">Join</button>
-         </div>
+          <div class="action-buttons">
+            <button type="submit" class="btn-switch">Join</button>
+          </div>
       </div>
     </div>
     </form>
   </div>
 
+  <script>
+    let isCameraOn = false;
+    let isMicOn = false;
+    let stream = null;
+    const videoElement = document.getElementById("videoElement");
+    const cameraStatus = document.getElementById("camera-status");
+    const cameraName = document.getElementById("username-display");
+
+    document.getElementById("toggle-camera").addEventListener("click", async () => {
+      if (!isCameraOn) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, });
+          videoElement.srcObject = stream;
+          videoElement.style.display = "block"; // Show the video
+          cameraStatus.style.display = "none"; // Hide text
+          cameraName.style.display = "none"; // Hide text
+          document.getElementById("camera-icon").classList.remove("fa-video-slash");
+          document.getElementById("camera-icon").classList.add("fa-video");
+          isCameraOn = true;
+        } catch (err) {
+          alert("Camera access denied!");
+        }
+      } else {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        videoElement.style.display = "none"; // Hide the video
+        cameraStatus.style.display = "block"; // Show text
+        cameraName.style.display = "block"; // Hide text
+        document.getElementById("camera-icon").classList.remove("fa-video");
+        document.getElementById("camera-icon").classList.add("fa-video-slash");
+        isCameraOn = false;
+      }
+    });
+
+    document.getElementById("toggle-mic").addEventListener("click", async () => {
+      if (!isMicOn) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          document.getElementById("mic-icon").classList.remove("fa-microphone-slash");
+          document.getElementById("mic-icon").classList.add("fa-microphone");
+          isMicOn = true;
+        } catch (err) {
+          alert("Microphone access denied!");
+        }
+      } else {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        document.getElementById("mic-icon").classList.remove("fa-microphone");
+        document.getElementById("mic-icon").classList.add("fa-microphone-slash");
+        isMicOn = false;
+      }
+    });
+  </script>
+
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- 
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Join Call</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-
-<div class="container mt-3">
-  <h2>Join call</h2>
-  <form action="/room">
-    <div class="mb-3 mt-3">
-      <label for="email">Room:</label>
-      <input type="text" class="form-control" id="romm" placeholder="Enter room id" name="room">
-    </div>
-    <div class="mb-3">
-      <label for="pwd">Username:</label>
-      <input type="text" class="form-control" id="username" placeholder="Enter username" name="username">
-    </div>
-    <button type="submit" class="btn btn-primary">Join Call</button>
-  </form>
-</div>
-
-</body>
-</html> -->

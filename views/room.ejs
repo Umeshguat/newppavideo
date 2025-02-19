@@ -174,6 +174,10 @@
   border-radius: 50%;
   color: white;
 }
+#chatContainer{
+  display: none;
+}
+
   </style>
 </head>
 
@@ -195,17 +199,21 @@
           <i class="fa fa-desktop"></i>
           <span>Screen Share</span>
         </div>
-        <div class="main__controls_button leaveMeeting" onclick="leaveMeeting()">
+        <div class="main__controls_button leaveMeeting"  style="background-color: unset;" onclick="leaveMeeting()">
           <i class="fa fa-times"></i>
           <span>Leave</span>
         </div>
-        <div class="main__controls_button leaveMeeting" onclick="stopScreenSharing()">
+        <div class="main__controls_button leaveMeeting" style="background-color: unset;"  onclick="stopScreenSharing()">
           <i class="fa fa-times"></i>
           <span>Stop Screen Share</span>
         </div>
+        <div class="main__controls_button chatButton" onclick="toggleChat()">
+          <i class="fa fa-comments"></i>
+          <span>Chat</span>
+        </div>
       </div>
     </div>
-    <div class="main__right">
+    <div class="main__right" id="chatContainer">
       <div class="main__header">
         <h6>Chat</h6>
       </div>
@@ -217,7 +225,20 @@
       </div>
     </div>
   </div>
+
+  <script>
+     function toggleChat() {
+        var chatContainer = document.getElementById("chatContainer");
+        if (chatContainer.style.display === "none" || chatContainer.style.display === "") {
+          chatContainer.style.display = "flex"; // Show chat
+        } else {
+          chatContainer.style.display = "none"; // Hide chat
+        }
+      }
+  </script>
   <script src="script.js"></script>
+
+  
 </body>
 
 </html>
