@@ -12,9 +12,6 @@ console.log('Username:', username);
 // console.log(username);
 
 var peer = new Peer(undefined, {
-  // path: "/peerjs",
-  // host: "/",
-  // port: "3030",
   host: '0.peerjs.com',
   port: 443,
   secure: true,
@@ -22,7 +19,7 @@ var peer = new Peer(undefined, {
 
 let myVideoStream;
 let activeCalls = [];
-let peerid;
+let peerid = null;
 let screenSharing = false;
 let screenShareStream = null;
 
@@ -35,22 +32,28 @@ var getUserMedia =
 navigator.mediaDevices
   .getUserMedia({
     video: true,
-    audio: { echoCancellation: true },
+    audio: true,
   })
   .then((stream) => {
     myVideoStream = stream;
+<<<<<<< HEAD
     const myVideoDiv = addStreamDiv();
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
 
 
+=======
+    const myVideoDiv = addStreamDiv(true);
+    addVideoStream(myVideoDiv, stream,  peerid, username);
+    
+    
+>>>>>>> a819bda (muted videop)
     socket.on("user-connected", (data) => {
       const userId = data.userId;
-      let name = data.username;
       const remoteUsername = data.username;
       const mydata = { name: username };
 
-      connectToNewUser(userId, myVideoStream, mydata, remoteUsername);
+      connectToNewUser(userId, stream, mydata, remoteUsername);
     });
 
     document.addEventListener("keydown", (e) => {
@@ -99,10 +102,7 @@ navigator.mediaDevices
         }
       }
     });
-
-
   });
-
 
 
 
@@ -116,7 +116,7 @@ peer.on("call", function (call) {
       call.answer(stream, {
         metadata: localuser
       });
-      const video = addStreamDiv();
+      const video = addStreamDiv(false);
       const remoteUsername = call.metadata.name;
       call.on("stream", function (remoteStream) {
         addVideoStream(video, remoteStream, call.peer, remoteUsername);
@@ -141,7 +141,7 @@ const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
   var call = peer.call(userId, streams, {
     metadata: mydata
   });
-  var video = addStreamDiv();
+  var video = addStreamDiv(false);
   call.on("stream", (userVideoStream) => {
     addVideoStream(video, userVideoStream, call.peer, remoteUsername);
   });
@@ -253,12 +253,13 @@ function stopScreenSharing() {
   });
   socket.emit("screen-share", { share: false, userId: peer.id });
   screenSharing = false
-}
+}     
 
 
 const playStop = () => {
   let enabled = myVideoStream.getVideoTracks()[0].enabled;
   if (enabled) {
+
     myVideoStream.getVideoTracks()[0].enabled = false;
     setPlayVideo();
   } else {
@@ -311,13 +312,18 @@ const setMuteButton = () => {
 
 
 //add new video due
-const addStreamDiv = () => {
+const addStreamDiv = (isMyVideo = false) => {
   // Create the parent div for the videos
   const videosDataDiv = document.createElement('div');
   videosDataDiv.classList.add('videos_data');
 
   // Create the video element
   const videoElement = document.createElement('video');
+
+  if (isMyVideo) {
+    videoElement.muted = true;
+  }
+
   // Set the video source here, if available
   videosDataDiv.appendChild(videoElement);
 
