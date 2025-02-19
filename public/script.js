@@ -228,6 +228,7 @@ const screenShare = () => {
 
 function stopScreenSharing() {
 
+// fsfs
   if (!screenSharing || !screenShareStream) return;
 
   let videoTrack = myVideoStream.getVideoTracks()[0]; // Get the original camera video track
