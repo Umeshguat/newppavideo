@@ -52,7 +52,8 @@ navigator.mediaDevices
 
     document.addEventListener("keydown", (e) => {
       if (e.which === 13 && chatInputBox.value != "") {
-        socket.emit("message", chatInputBox.value);
+        const messagedata =     username + " : " + chatInputBox.value;
+        socket.emit("message", messagedata);
         chatInputBox.value = "";
       }
     });
@@ -261,6 +262,7 @@ const playStop = () => {
 
 //mute unmute 
 const muteUnmute = () => {
+  
   const enabled = myVideoStream.getAudioTracks()[0].enabled;
   const myMuteStatusDiv = document.querySelector("#video-grid .videos_data:first-child .user_name:nth-child(3)");
   if (enabled) {
