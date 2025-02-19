@@ -92,7 +92,7 @@ navigator.mediaDevices
           // parentDiv.classList.replace('videos_data','screen-share');
           parentDiv.classList.add('screen-share');
         } else {
-          parentDiv.classList.replace('screen-share', 'screen-share');
+          parentDiv.classList.remove('screen-share');
         }
       }
     });
@@ -226,27 +226,24 @@ const screenShare = () => {
 
 
 function stopScreenSharing() {
-  if (!screenSharing) return;
-  let videoTrack = local_stream.getVideoTracks()[0];
-  if (peer) {
-    activeCalls.forEach(call => {
-      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-      if (sender) {
-        const originalTrack = sender.track; // Save the original track to restore later
-        sender.replaceTrack(videoTrack);
 
-        videoTrack.onended = () => {
-          sender.replaceTrack(originalTrack);
-        };
-      }
-    });
+  if (!screenSharing || !screenShareStream) return;
 
-  }
-  screenStream.getTracks().forEach(function (track) {
-    track.stop();
+  let videoTrack = myVideoStream.getVideoTracks()[0]; // Get the original camera video track
+
+  activeCalls.forEach(call => {
+    const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+    if (sender) {
+      sender.replaceTrack(videoTrack); // Restore the original camera feed
+    }
   });
+
+  screenShareStream.getTracks().forEach(track => track.stop());
+  
   socket.emit("screen-share", { share: false, userId: peer.id });
-  screenSharing = false
+
+  screenSharing = false;
+  screenShareStream = null;
 }     
 
 
