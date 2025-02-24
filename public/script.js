@@ -268,6 +268,7 @@ const playStop = () => {
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
     // Stop all video tracks
+    console.log('off');
     videoTracks.forEach(track => track.stop());
     setPlayVideo();
 
@@ -279,16 +280,15 @@ const playStop = () => {
       }
     });
   } else {
-    // Restart the video stream
+    console.log('on');
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then((stream) => {
-        const newVideoTrack = stream;
+        myVideoStream = stream;
 
-        // Replace the video track in each active call with the new track
         activeCalls.forEach(call => {
           const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
           if (sender) {
-            sender.replaceTrack(newVideoTrack);
+            sender.replaceTrack(myVideoStream);
           }
         }); 
         peerid = peer.id;
@@ -296,7 +296,7 @@ const playStop = () => {
      
         if (videoElementon) {
         
-          videoElementon.srcObject = newVideoTrack; // Assign the stream to the video element
+          videoElementon.srcObject = myVideoStream; // Assign the stream to the video element
           videoElementon.play().catch(err => console.error("Error playing video:", err));
         } else {
           console.error(`Video element with data-stream-id="${peerid}" not found.`);
