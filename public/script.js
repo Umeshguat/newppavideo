@@ -52,7 +52,7 @@ navigator.mediaDevices
 
     document.addEventListener("keydown", (e) => {
       if (e.which === 13 && chatInputBox.value != "") {
-        const messagedata =     username + " : " + chatInputBox.value;
+        const messagedata = username + " : " + chatInputBox.value;
         socket.emit("message", messagedata);
         chatInputBox.value = "";
       }
@@ -228,7 +228,7 @@ const screenShare = () => {
 
 function stopScreenSharing() {
 
-// fsfs
+  // fsfs
   if (!screenSharing || !screenShareStream) return;
 
   let videoTrack = myVideoStream.getVideoTracks()[0]; // Get the original camera video track
@@ -241,12 +241,12 @@ function stopScreenSharing() {
   });
 
   screenShareStream.getTracks().forEach(track => track.stop());
-  
+
   socket.emit("screen-share", { share: false, userId: peer.id });
 
   screenSharing = false;
   screenShareStream = null;
-}     
+}
 
 
 const playStop = () => {
@@ -255,15 +255,17 @@ const playStop = () => {
 
     myVideoStream.getVideoTracks()[0].enabled = false;
     setPlayVideo();
+    
   } else {
     setStopVideo();
     myVideoStream.getVideoTracks()[0].enabled = true;
+
   }
 };
 
 //mute unmute 
 const muteUnmute = () => {
-  
+
   const enabled = myVideoStream.getAudioTracks()[0].enabled;
   const myMuteStatusDiv = document.querySelector("#video-grid .videos_data:first-child .user_name:nth-child(3)");
   if (enabled) {
