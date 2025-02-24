@@ -249,19 +249,65 @@ function stopScreenSharing() {
 }
 
 
-const playStop = () => {
-  let enabled = myVideoStream.getVideoTracks()[0].enabled;
-  if (enabled) {
+// const playStop = () => {
+//   let enabled = myVideoStream.getVideoTracks()[0].enabled;
+//   if (enabled) {
 
-    myVideoStream.getVideoTracks()[0].enabled = false;
-    setPlayVideo();
+//     myVideoStream.getVideoTracks()[0].enabled = false;
+//     setPlayVideo();
     
-  } else {
-    setStopVideo();
-    myVideoStream.getVideoTracks()[0].enabled = true;
+//   } else {
+//     setStopVideo();
+//     myVideoStream.getVideoTracks()[0].enabled = true;
 
+//   }
+// };
+
+const playStop = () => {
+  const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
+
+  if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
+    // Stop all video tracks
+    videoTracks.forEach(track => track.stop());
+    setPlayVideo();
+
+    // Replace the video track in each active call with a null track
+    activeCalls.forEach(call => {
+      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+      if (sender) {
+        sender.replaceTrack(null);
+      }
+    });
+  } else {
+    // Restart the video stream
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        const newVideoTrack = stream;
+
+        // Replace the video track in each active call with the new track
+        activeCalls.forEach(call => {
+          const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+          if (sender) {
+            sender.replaceTrack(newVideoTrack);
+          }
+        }); 
+        peerid = peer.id;
+        const videoElementon = document.querySelector(`video[data-stream-id="${peerid}"]`);
+     
+        if (videoElementon) {
+        
+          videoElementon.srcObject = newVideoTrack; // Assign the stream to the video element
+          videoElementon.play().catch(err => console.error("Error playing video:", err));
+        } else {
+          console.error(`Video element with data-stream-id="${peerid}" not found.`);
+        }
+
+
+      })
+      .catch(err => console.error('Error accessing camera:', err));
   }
 };
+
 
 //mute unmute 
 const muteUnmute = () => {
