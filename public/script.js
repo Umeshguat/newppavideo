@@ -296,7 +296,8 @@ const playStop = () => {
      
         if (videoElementon) {
         
-          videoElementon.srcObject = myVideoStream; // Assign the stream to the video element
+          videoElementon.srcObject = myVideoStream; // Assign the stream to the video element'
+          setStopVideo();
           videoElementon.play().catch(err => console.error("Error playing video:", err));
         } else {
           console.error(`Video element with data-stream-id="${peerid}" not found.`);
@@ -305,6 +306,7 @@ const playStop = () => {
 
       })
       .catch(err => console.error('Error accessing camera:', err));
+      
   }
 };
 
