@@ -199,29 +199,36 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 
 const screenShare = () => {
 
-  screenSharing = true;
-  socket.emit("screen-share", { share: true, userId: peer.id });
-  navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-    .then(screenStream => {
-      screenShareStream = screenStream;
-      const videoTrack = screenStream.getVideoTracks()[0];
+  if (!screenSharing) {
+    screenSharing = true;
+    socket.emit("screen-share", { share: true, userId: peer.id });
+    setStopScreenShare();
+    navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      .then(screenStream => {
+        screenShareStream = screenStream;
+        const videoTrack = screenStream.getVideoTracks()[0];
 
-      activeCalls.forEach(call => {
-        const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-        if (sender) {
+        activeCalls.forEach(call => {
+          const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+          if (sender) {
+            const originalTrack = sender.track;
+            sender.replaceTrack(videoTrack);
 
-          const originalTrack = sender.track;
-          sender.replaceTrack(videoTrack);
+            videoTrack.onended = () => {
+              screenShareStream = null;
+              screenSharing = false;
+              sender.replaceTrack(originalTrack);
+            };
+          }
+        });
+      })
+      .catch(err => console.error('Error sharing screen:', err));
+  } else {
+    screenSharing = false;
+    setPlayScreenShare();
+    alert('dfd');
+  }
 
-          videoTrack.onended = () => {
-            screenShareStream = null;
-            screenSharing = false;
-            sender.replaceTrack(originalTrack);
-          };
-        }
-      });
-    })
-    .catch(err => console.error('Error sharing screen:', err));
 
 }
 
@@ -255,7 +262,7 @@ function stopScreenSharing() {
 
 //     myVideoStream.getVideoTracks()[0].enabled = false;
 //     setPlayVideo();
-    
+
 //   } else {
 //     setStopVideo();
 //     myVideoStream.getVideoTracks()[0].enabled = true;
@@ -290,12 +297,12 @@ const playStop = () => {
           if (sender) {
             sender.replaceTrack(myVideoStream);
           }
-        }); 
+        });
         peerid = peer.id;
         const videoElementon = document.querySelector(`video[data-stream-id="${peerid}"]`);
-     
+
         if (videoElementon) {
-        
+
           videoElementon.srcObject = myVideoStream; // Assign the stream to the video element'
           setStopVideo();
           videoElementon.play().catch(err => console.error("Error playing video:", err));
@@ -306,7 +313,7 @@ const playStop = () => {
 
       })
       .catch(err => console.error('Error accessing camera:', err));
-      
+
   }
 };
 
@@ -336,6 +343,25 @@ const setPlayVideo = () => {
   <span class="unmute">Resume Video</span>`;
   document.getElementById("playPauseVideo").innerHTML = html;
 };
+
+
+
+const setStopScreenShare = () => {
+
+  const html = `<i class="unmute fa fa-desktop"></i>
+    <span class="unmute">Stop Screen Share</span>`;
+  document.getElementById("screenshare").innerHTML = html;
+
+};
+
+const setPlayScreenShare = () => {
+
+  const html = `<i class=" fa fa-desktop"></i>
+    <span class=""> Screen Share</span>`;
+  document.getElementById("screenshare").innerHTML = html;
+
+};
+
 
 const setStopVideo = () => {
   const html = `<i class=" fa fa-video-camera"></i>
