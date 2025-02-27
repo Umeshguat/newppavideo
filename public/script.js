@@ -202,12 +202,12 @@ const screenShare = () => {
   if (!screenSharing) {
     screenSharing = true;
     socket.emit("screen-share", { share: true, userId: peer.id });
-    setStopScreenShare();
+   
     navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
       .then(screenStream => {
         screenShareStream = screenStream;
         const videoTrack = screenStream.getVideoTracks()[0];
-
+        setStopScreenShare();
         activeCalls.forEach(call => {
           const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
           if (sender) {
@@ -224,9 +224,8 @@ const screenShare = () => {
       })
       .catch(err => console.error('Error sharing screen:', err));
   } else {
-    screenSharing = false;
     setPlayScreenShare();
-    alert('dfd');
+
   }
 
 
@@ -274,18 +273,18 @@ const playStop = () => {
   const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
-    // Stop all video tracks
-    console.log('off');
     videoTracks.forEach(track => track.stop());
     setPlayVideo();
 
     // Replace the video track in each active call with a null track
-    // activeCalls.forEach(call => {
-    //   const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-    //   if (sender) {
-    //     sender.replaceTrack(null);
-    //   }
-    // });
+    activeCalls.forEach(call => {
+      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+      if (sender) {
+        console.log(sender);
+        sender.replaceTrack(null);
+      }
+     
+    });
   } else {
     console.log('on');
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
