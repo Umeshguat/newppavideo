@@ -277,14 +277,7 @@ const playStop = () => {
     setPlayVideo();
 
     // Replace the video track in each active call with a null track
-    activeCalls.forEach(call => {
-      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-      if (sender) {
-        console.log(sender);
-        sender.replaceTrack(null);
-      }
-     
-    });
+   
   } else {
     console.log('on');
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
