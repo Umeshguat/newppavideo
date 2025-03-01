@@ -270,14 +270,16 @@ const playStop = async () => {
   const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
-    console.log(videoTracks);
-    videoTracks.forEach(track => track.stop());
-    setPlayVideo();
+    
+    const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    myVideoStream = stream;
+
+    const videoTrack = screenStream.getVideoTracks()[0];
     
     activeCalls.forEach(call => {
       const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video'); // Check if s.track exists
       if (sender) {
-        sender.replaceTrack(null);
+        sender.replaceTrack(videoTrack);
       }
     });
   } else {
@@ -285,7 +287,7 @@ const playStop = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       myVideoStream = stream;
 
-      const videoTrack = myVideoStream.getVideoTracks()[0];
+      const videoTrack = screenStream.getVideoTracks()[0];
 
       activeCalls.forEach(call => {
         const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
