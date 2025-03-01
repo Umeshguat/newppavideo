@@ -292,15 +292,10 @@ const playStop = () => {
         myVideoStream = stream;
 
         activeCalls.forEach(call => {
-          let sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-    
+          const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
           if (sender) {
-            console.log("Replacing video track", sender);
-            sender.replaceTrack(myVideoStream.getVideoTracks()[0]);
-          } else {
-            console.warn("No video sender found, renegotiating...");
-            call.peerConnection.addTrack(myVideoStream.getVideoTracks()[0], myVideoStream);
-            call.peerConnection.onnegotiationneeded?.(); // Ensure renegotiation happens if required
+            const originalTrack = sender.track;
+            sender.replaceTrack(myVideoStream);
           }
         });
 
