@@ -126,9 +126,9 @@ peer.on("call", function (call) {
   // activeCalls.push(call);
 });
 
-  peer.on("open", (id) => {
-    socket.emit("join-room", ROOM_ID, USERNAME, id);
-  });
+peer.on("open", (id) => {
+  socket.emit("join-room", ROOM_ID, USERNAME, id);
+});
 
 // CHAT
 
@@ -198,7 +198,7 @@ const screenShare = () => {
   if (!screenSharing) {
     screenSharing = true;
     socket.emit("screen-share", { share: true, userId: peer.id });
-   
+
     navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
       .then(screenStream => {
         screenShareStream = screenStream;
@@ -265,155 +265,168 @@ function stopScreenSharing() {
 //   }
 // };
 
-
 const playStop = async () => {
-  const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
+  try {
+    if (!myVideoStream) {
+      console.error("myVideoStream is not defined");
+      return;
+    }
 
-  if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
-    
-    const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-    myVideoStream = stream;
+    const videoTracks = myVideoStream.getVideoTracks();
 
-    const videoTrack = myVideoStream.getVideoTracks()[0];
-    
-    activeCalls.forEach(call => {
-      const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video'); // Check if s.track exists
-      if (sender) {
-        sender.replaceTrack(videoTrack);
-      }
-    });
-  } else {
-    try {
+    if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
+      // Stop all video tracks
+      videoTracks.forEach(track => track.stop());
+      setPlayVideo();
+
+      // Remove video tracks from active calls
+      activeCalls.forEach(call => {
+        const videoSender = call.peerConnection.getSenders().find(s => s.track?.kind === 'video');
+        if (videoSender) {
+          videoSender.replaceTrack(null);
+        }
+      });
+    } else {
+      // Request new media stream
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       myVideoStream = stream;
 
-      const videoTrack = myVideoStream.getVideoTracks()[0];
-
       activeCalls.forEach(call => {
-        const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        const sender = call.peerConnection.getSenders().find(s => s.track?.kind === 'video');
+
         if (sender) {
-          sender.replaceTrack(videoTrack);
+          console.log("Replacing video track", sender);
+          sender.replaceTrack(myVideoStream.getVideoTracks()[0]);
+        } else {
+          console.warn("No video sender found, renegotiating...");
+          call.peerConnection.addTrack(myVideoStream.getVideoTracks()[0], myVideoStream);
+          call.peerConnection.onnegotiationneeded?.(); // Trigger renegotiation
         }
       });
 
-      peerid = peer.id;
-      const videoElementon = document.querySelector(`video[data-stream-id="${peerid}"]`);
-
-      if (videoElementon) {
-        videoElementon.srcObject = stream;
-        setStopVideo();
-        videoElementon.play().catch(err => console.error("Error playing video:", err));
-      } else {
-        console.error(`Video element with data-stream-id="${peerid}" not found.`);
+      const peerId = peer?.id;
+      if (!peerId) {
+        console.error("Peer ID is not available");
+        return;
       }
-    } catch (err) {
-      console.error('Error accessing camera:', err);
+
+      const videoElement = document.querySelector(`video[data-stream-id="${peerId}"]`);
+      if (videoElement) {
+        videoElement.srcObject = myVideoStream;
+        setStopVideo();
+        await videoElement.play().catch(err => console.error("Error playing video:", err));
+      } else {
+        console.error(`Video element with data-stream-id="${peerId}" not found.`);
+      }
     }
-  }
-};
-
-//mute unmute 
-const muteUnmute = () => {
-
-  const enabled = myVideoStream.getAudioTracks()[0].enabled;
-  const myMuteStatusDiv = document.querySelector("#video-grid .videos_data:first-child .user_name:nth-child(3)");
-  if (enabled) {
-    myVideoStream.getAudioTracks()[0].enabled = false;
-    setUnmuteButton();
-    myMuteStatusDiv.innerText = 'Muted';
-    socket.emit("mute-status-changed", { muted: '<i class="unmute fa fa-microphone-slash"></i>', userId: myMuteStatusDiv.id });
-  } else {
-    setMuteButton();
-    myMuteStatusDiv.innerText = 'Unmuted';
-    myVideoStream.getAudioTracks()[0].enabled = true;
-    socket.emit("mute-status-changed", { muted: '<i class="fa fa-microphone"></i>', userId: myMuteStatusDiv.id });
+  } catch (err) {
+    console.error("Error in playStop function:", err);
   }
 };
 
 
+  //mute unmute 
+  const muteUnmute = () => {
 
-const setPlayVideo = () => {
-  const html = `<i class="unmute fa fa-pause-circle"></i>
+    const enabled = myVideoStream.getAudioTracks()[0].enabled;
+    const myMuteStatusDiv = document.querySelector("#video-grid .videos_data:first-child .user_name:nth-child(3)");
+    if (enabled) {
+      myVideoStream.getAudioTracks()[0].enabled = false;
+      setUnmuteButton();
+      myMuteStatusDiv.innerText = 'Muted';
+      socket.emit("mute-status-changed", { muted: '<i class="unmute fa fa-microphone-slash"></i>', userId: myMuteStatusDiv.id });
+    } else {
+      setMuteButton();
+      myMuteStatusDiv.innerText = 'Unmuted';
+      myVideoStream.getAudioTracks()[0].enabled = true;
+      socket.emit("mute-status-changed", { muted: '<i class="fa fa-microphone"></i>', userId: myMuteStatusDiv.id });
+    }
+  };
+
+
+
+  const setPlayVideo = () => {
+    const html = `<i class="unmute fa fa-pause-circle"></i>
   <span class="unmute">Resume Video</span>`;
-  document.getElementById("playPauseVideo").innerHTML = html;
-};
+    document.getElementById("playPauseVideo").innerHTML = html;
+  };
 
 
 
-const setStopScreenShare = () => {
+  const setStopScreenShare = () => {
 
-  const html = `<i class="unmute fa fa-desktop"></i>
+    const html = `<i class="unmute fa fa-desktop"></i>
     <span class="unmute">Stop Screen Share</span>`;
-  document.getElementById("screenshare").innerHTML = html;
+    document.getElementById("screenshare").innerHTML = html;
 
-};
+  };
 
-const setPlayScreenShare = () => {
+  const setPlayScreenShare = () => {
 
-  const html = `<i class=" fa fa-desktop"></i>
+    const html = `<i class=" fa fa-desktop"></i>
     <span class=""> Screen Share</span>`;
-  document.getElementById("screenshare").innerHTML = html;
+    document.getElementById("screenshare").innerHTML = html;
 
-};
+  };
 
 
-const setStopVideo = () => {
-  const html = `<i class=" fa fa-video-camera"></i>
+  const setStopVideo = () => {
+    const html = `<i class=" fa fa-video-camera"></i>
   <span class="">Pause Video</span>`;
-  document.getElementById("playPauseVideo").innerHTML = html;
-};
+    document.getElementById("playPauseVideo").innerHTML = html;
+  };
 
-const setUnmuteButton = () => {
-  const html = `<i class="unmute fa fa-microphone-slash"></i>
+  const setUnmuteButton = () => {
+    const html = `<i class="unmute fa fa-microphone-slash"></i>
   <span class="unmute">Unmute</span>`;
-  document.getElementById("muteButton").innerHTML = html;
-};
-const setMuteButton = () => {
-  const html = `<i class="fa fa-microphone"></i>
+    document.getElementById("muteButton").innerHTML = html;
+  };
+  const setMuteButton = () => {
+    const html = `<i class="fa fa-microphone"></i>
   <span>Mute</span>`;
-  document.getElementById("muteButton").innerHTML = html;
-};
+    document.getElementById("muteButton").innerHTML = html;
+  };
 
 
-//add new video due
-const addStreamDiv = (isMyVideo = false) => {
-  // Create the parent div for the videos
-  const videosDataDiv = document.createElement('div');
-  videosDataDiv.classList.add('videos_data');
+  //add new video due
+  const addStreamDiv = (isMyVideo = false) => {
+    // Create the parent div for the videos
+    const videosDataDiv = document.createElement('div');
+    videosDataDiv.classList.add('videos_data');
 
-  // Create the video element
-  const videoElement = document.createElement('video');
+    // Create the video element
+    const videoElement = document.createElement('video');
 
-  if (isMyVideo) {
-    videoElement.muted = true;
+    if (isMyVideo) {
+      videoElement.muted = true;
+    }
+
+    // Set the video source here, if available
+    videosDataDiv.appendChild(videoElement);
+
+    const userName1Div = document.createElement('div');
+    userName1Div.classList.add('user_name');
+    userName1Div.textContent = 'Umesh Kumar';
+    videosDataDiv.appendChild(userName1Div);
+
+    const userName2Div = document.createElement('div');
+    userName2Div.classList.add('user_name');
+    // userName2Div.textContent = '';
+    videosDataDiv.appendChild(userName2Div);
+
+
+    return videosDataDiv;
+
   }
 
-  // Set the video source here, if available
-  videosDataDiv.appendChild(videoElement);
-
-  const userName1Div = document.createElement('div');
-  userName1Div.classList.add('user_name');
-  userName1Div.textContent = 'Umesh Kumar';
-  videosDataDiv.appendChild(userName1Div);
-
-  const userName2Div = document.createElement('div');
-  userName2Div.classList.add('user_name');
-  // userName2Div.textContent = '';
-  videosDataDiv.appendChild(userName2Div);
 
 
-  return videosDataDiv;
+  //leavemeeting 
+  const leaveMeeting = () => {
 
-}
-
-
-
-//leavemeeting 
-const leaveMeeting = () => {
-
-  window.location.href = 'http://localhost:3030/';
-  socket.emit("leavemeeting", peer.id);
-}
+    window.location.href = 'http://localhost:3030/';
+    socket.emit("leavemeeting", peer.id);
+  }
 
 
 
