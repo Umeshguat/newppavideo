@@ -283,40 +283,43 @@ const playStop = () => {
   } else {
     console.log('Restarting video...');
 
-    // Get a new video stream
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        // Stop the old stream if it exists
-        if (myVideoStream) {
-          myVideoStream.getTracks().forEach(track => track.stop());
+    try {
+      // Get a new video stream
+      const stream =  navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+      // Stop the old stream if it exists
+      if (myVideoStream) {
+        myVideoStream.getTracks().forEach(track => track.stop());
+      }
+
+      // Update the global stream variable
+      myVideoStream = stream;
+
+      // Replace the video track in each active call with the new stream's video track
+      const newVideoTrack = myVideoStream.getVideoTracks()[0];
+      activeCalls.forEach(call => {
+        const videoSender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (videoSender) {
+          videoSender.replaceTrack(newVideoTrack) // Replace with the new video track
+            .then(() => console.log('Video track replaced successfully'))
+            .catch(err => console.error('Error replacing video track:', err));
         }
+      });
 
-        // Update the global stream variable
-        myVideoStream = stream;
-
-        // Replace the video track in each active call with the new stream's video track
-        const newVideoTrack = myVideoStream.getVideoTracks()[0];
-        activeCalls.forEach(call => {
-          const videoSender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-          if (videoSender) {
-            videoSender.replaceTrack(newVideoTrack); // Replace with the new video track
-          }
-        });
-
-        // Update the local video element
-        const videoElementon = document.querySelector(`video[data-stream-id="${peer.id}"]`);
-        if (videoElementon) {
-          videoElementon.srcObject = myVideoStream; // Assign the new stream to the video element
-          setStopVideo(); // Update UI to show "Pause Video"
-          videoElementon.play().catch(err => console.error("Error playing video:", err));
-        } else {
-          console.error(`Video element with data-stream-id="${peer.id}" not found.`);
-        }
-      })
-      .catch(err => console.error('Error accessing camera:', err));
+      // Update the local video element
+      const videoElement = document.querySelector(`video[data-stream-id="${peer.id}"]`);
+      if (videoElement) {
+        videoElement.srcObject = myVideoStream; // Assign the new stream to the video element
+        setStopVideo(); // Update UI to show "Pause Video"
+        videoElement.play().catch(err => console.error("Error playing video:", err));
+      } else {
+        console.error(`Video element with data-stream-id="${peer.id}" not found.`);
+      }
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+    }
   }
 };
-
 
 //mute unmute 
 const muteUnmute = () => {
