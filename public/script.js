@@ -292,9 +292,15 @@ const playStop = () => {
         myVideoStream = stream;
 
         activeCalls.forEach(call => {
-          if (call.videoSender) {
-            console.log(call.videoSender);
-            call.videoSender.replaceTrack(myVideoStream.getVideoTracks()[0]);
+          let sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+    
+          if (sender) {
+            console.log("Replacing video track", sender);
+            sender.replaceTrack(myVideoStream.getVideoTracks()[0]);
+          } else {
+            console.warn("No video sender found, renegotiating...");
+            call.peerConnection.addTrack(myVideoStream.getVideoTracks()[0], myVideoStream);
+            call.peerConnection.onnegotiationneeded?.(); // Ensure renegotiation happens if required
           }
         });
 
@@ -308,7 +314,7 @@ const playStop = () => {
         } else {
           console.error(`Video element with data-stream-id="${peerid}" not found.`);
         }
-      })
+      })    
       .catch(err => console.error('Error accessing camera:', err));
   }
 };
