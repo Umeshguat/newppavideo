@@ -294,6 +294,7 @@ const playStop = () => {
         activeCalls.forEach(call => {
           const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
           if (sender) {
+            console.log(sender.track);
             const originalTrack = sender.track;
             sender.replaceTrack(myVideoStream);
           }
