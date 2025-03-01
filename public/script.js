@@ -269,17 +269,21 @@ const playStop = () => {
   const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
+    // Store the senders before stopping the tracks
+    activeCalls.forEach(call => {
+      call.videoSender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+    });
+
+    // Stop all video tracks
     videoTracks.forEach(track => track.stop());
     setPlayVideo();
 
-    // Replace the video track in each active call with a null track
+    // Replace the video track in each active call with null
     activeCalls.forEach(call => {
-      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-      if (sender) {
-        console.log(sender);
-        sender.replaceTrack(null);
+      if (call.videoSender) {
+        console.log(call.videoSender);
+        call.videoSender.replaceTrack(null);
       }
-     
     });
   } else {
     console.log('on');
@@ -288,30 +292,27 @@ const playStop = () => {
         myVideoStream = stream;
 
         activeCalls.forEach(call => {
-          const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-          console.log(sender);
-          if (sender) {
-            sender.replaceTrack(myVideoStream);
+          if (call.videoSender) {
+            console.log(call.videoSender);
+            call.videoSender.replaceTrack(myVideoStream.getVideoTracks()[0]);
           }
         });
+
         peerid = peer.id;
         const videoElementon = document.querySelector(`video[data-stream-id="${peerid}"]`);
 
         if (videoElementon) {
-
-          videoElementon.srcObject = myVideoStream; // Assign the stream to the video element'
+          videoElementon.srcObject = myVideoStream; // Assign the stream to the video element
           setStopVideo();
           videoElementon.play().catch(err => console.error("Error playing video:", err));
         } else {
           console.error(`Video element with data-stream-id="${peerid}" not found.`);
         }
-
-
       })
       .catch(err => console.error('Error accessing camera:', err));
-
   }
 };
+
 
 
 //mute unmute 
