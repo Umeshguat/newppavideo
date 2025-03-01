@@ -38,6 +38,7 @@ navigator.mediaDevices
     myVideoStream = stream;
     const myVideoDiv = addStreamDiv(true);
 
+    console.log(peer.id);
     addVideoStream(myVideoDiv, stream, peer.id, username);
 
 
@@ -122,12 +123,12 @@ peer.on("call", function (call) {
       console.log("Failed to get local stream", err);
     }
   );
-  activeCalls.push(call);
+  // activeCalls.push(call);
 });
 
-peer.on("open", (id) => {
-  socket.emit("join-room", ROOM_ID, USERNAME, id);
-});
+  peer.on("open", (id) => {
+    socket.emit("join-room", ROOM_ID, USERNAME, id);
+  });
 
 // CHAT
 
@@ -140,14 +141,9 @@ const connectToNewUser = (userId, streams, mydata, remoteUsername) => {
   call.on("stream", (userVideoStream) => {
     addVideoStream(video, userVideoStream, call.peer, remoteUsername);
   });
-  activeCalls.push(call);
+  // activeCalls.push(call);
 
-  if (screenSharing && screenShareStream) {
-    const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
-    if (sender) {
-      sender.replaceTrack(screenShareStream.getVideoTracks()[0]);
-    }
-  }
+
 };
 
 const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
@@ -165,7 +161,7 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   }
 
   videoEl.srcObject = stream;
-  videoEl.setAttribute('data-stream-id', peer.id);
+  videoEl.setAttribute('data-stream-id', peerid);
   const streamIdDiv = videoContainer.querySelectorAll(".user_name")[0]; // First div for stream ID
   const muteStatusDiv = videoContainer.querySelectorAll(".user_name")[1]; // Second div for mute status
 
@@ -277,7 +273,14 @@ const playStop = () => {
     setPlayVideo();
 
     // Replace the video track in each active call with a null track
-   
+    activeCalls.forEach(call => {
+      const sender = call.peerConnection.getSenders().find(s => s.track.kind === 'video');
+      if (sender) {
+        console.log(sender);
+        sender.replaceTrack(null);
+      }
+     
+    });
   } else {
     console.log('on');
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
