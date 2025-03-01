@@ -35,6 +35,7 @@ io.on("connection", (socket) => {
     //call signal
     socket.join(roomId);
     socket.to(roomId).broadcast.emit("user-connected", {userId, username});
+    
 
     // socket.on("username", (data) => {
     //   console.log(data);
