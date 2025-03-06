@@ -70,7 +70,8 @@
 
     .main__controls {
       display: flex;
-      justify-content: space-around;
+      /*justify-content: space-around;*/
+      justify-content: center;
       padding: 15px;
       background: rgba(0, 0, 0, 0.8);
       border-radius: 10px;
@@ -201,17 +202,18 @@
           <i class="fa fa-desktop"></i>
           <span>Screen Share</span>
         </div>
-        <div class="main__controls_button"   onclick="leaveMeeting()">
-          <i style="color: red;" class="fa fa-times"></i>
-          <span>Leave</span>
-        </div>
-        <div class="main__controls_button "   onclick="stopScreenSharing()">
-          <i  style="color: red;" class="fa fa-times"></i>
-          <span>Stop Screen Share</span>
-        </div>
+
+        <!--<div class="main__controls_button "   onclick="stopScreenSharing()">-->
+        <!--  <i  style="color: red;" class="fa fa-times"></i>-->
+        <!--  <span>Stop Screen Share</span>-->
+        <!--</div>-->
         <div class="main__controls_button chatButton" onclick="toggleChat()">
           <i class="fa fa-comments"></i>
           <span>Chat</span>
+        </div>
+        <div class="main__controls_button"   onclick="leaveMeeting()">
+          <i style="color: red;" class="fa fa-times"></i>
+          <span>Leave</span>
         </div>
       </div>
     </div>
