@@ -222,17 +222,14 @@ video{
       position: relative;
     } */
 
-
-
-  .overlay {
-  position: absolute;
-  top: 30px;
-  /* left: 0; */
-  width: 172.656px;
-  height: 130px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 01); /* Semi-transparent black */
-  pointer-events: none; /* Ensures clicks pass through */
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-
+    .overlay {
+      position: absolute;
+      top: 30px;
+      /* left: 0; */
+      width: 172.656px;
+      height: 130px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 01); /* Semi-transparent black */
+      pointer-events: none; /* Ensures clicks pass through */
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }

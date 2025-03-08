@@ -36,11 +36,6 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.to(roomId).broadcast.emit("user-connected", {userId, username});
 
-    // socket.on("username", (data) => {
-    //   console.log(data);
-    //   io.to(roomId).broadcast.emit("setUsername", { data });
-    // }); 
-
     //screen share signal
     socket.on("screen-share", ( share, userId) => {
       console.log(share);
@@ -58,9 +53,12 @@ io.on("connection", (socket) => {
       console.log(muted);
       io.to(roomId).emit("update-mute-status", { muted, userId });
     });
-    
-    
 
+    socket.on("playStop", (screendata) => {
+      console.log(screendata);
+      io.to(roomId).emit("update-playstop", screendata);
+    });
+    
     socket.on("leavemeeting", (userId) => {
       io.to(roomId).emit("user-leaved-meeting",  userId);
     });

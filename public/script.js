@@ -93,7 +93,7 @@ var getUserMedia =
 //       }
 //     })
 //     socket.on('startshare', ({ share }) => {
-      
+
 //       // let userDiv = document.getElementById(share.userId + '__screenshare');
 //       let userDiv = document.querySelector(`video[data-stream-id="${share.userId}_screenshare"]`);
 //       if (userDiv) {
@@ -128,72 +128,89 @@ const startVideoStream = async () => {
     video: true,
     audio: true,
   })
-  .then((stream) => {
-    myVideoStream = stream;
-    const myVideoDiv = addStreamDiv(true);
+    .then((stream) => {
+      myVideoStream = stream;
+      const myVideoDiv = addStreamDiv(true);
 
-    addVideoStream(myVideoDiv, stream, peerid, username);
+      addVideoStream(myVideoDiv, stream, peerid, username);
 
-    socket.on("user-connected", (data) => {
-      console.log(data);
-      const userId = data.userId;
-      const remoteUsername = data.username;
-      const mydata = { name: username };
+      socket.on("user-connected", (data) => {
+        console.log(data);
+        const userId = data.userId;
+        const remoteUsername = data.username;
+        const mydata = { name: username };
 
-      connectToNewUser(userId, stream, mydata, remoteUsername);
-    });
+        connectToNewUser(userId, stream, mydata, remoteUsername);
+      });
 
-    document.addEventListener("keydown", (e) => {
-      if (e.which === 13 && chatInputBox.value != "") {
-        const messagedata = username + " : " + chatInputBox.value;
-        socket.emit("message", messagedata);
-        chatInputBox.value = "";
-      }
-    });
-
-    socket.on("createMessage", (msg) => {
-      let li = document.createElement("li");
-      li.innerHTML = msg;
-      all_messages.append(li);
-      main__chat__window.scrollTop = main__chat__window.scrollHeight;
-    });
-
-    socket.on("update-mute-status", ({ muted, userId }) => {
-      user = muted.userId
-      let userDiv = document.getElementById(user);
-      if (userDiv) {
-        userDiv.innerHTML = muted.muted;
-      }
-    });
-
-    socket.on('user-leaved-meeting', (userId) => {
-      let userDiv = document.getElementById(userId);
-      console.log(userDiv);
-      if (userDiv) {
-        let parentDiv = userDiv.closest('.videos_data');
-        if (parentDiv) {
-          parentDiv.remove();
+      document.addEventListener("keydown", (e) => {
+        if (e.which === 13 && chatInputBox.value != "") {
+          const messagedata = username + " : " + chatInputBox.value;
+          socket.emit("message", messagedata);
+          chatInputBox.value = "";
         }
-      }
-    });
+      });
 
-    socket.on('startshare', ({ share }) => {
-      // let userDiv = document.getElementById(share.userId);
-      let userDiv = document.querySelector(`video[data-stream-id="${share.userId}_screenshare"]`);
-      if (userDiv) {
-        let parentDiv = userDiv.closest('.videos_data');
-        if (parentDiv && share.share == true) {
-          parentDiv.classList.add('screen-share');
-        } else {
-          parentDiv.remove();
-          // parentDiv.classList.remove('screen-share');
+      socket.on("createMessage", (msg) => {
+        let li = document.createElement("li");
+        li.innerHTML = msg;
+        all_messages.append(li);
+        main__chat__window.scrollTop = main__chat__window.scrollHeight;
+      });
+
+      socket.on("update-mute-status", ({ muted, userId }) => {
+        user = muted.userId
+        let userDiv = document.getElementById(user);
+        if (userDiv) {
+          userDiv.innerHTML = muted.muted;
         }
-      }
+      });
+
+      socket.on('user-leaved-meeting', (userId) => {
+        let userDiv = document.getElementById(userId);
+        console.log(userDiv);
+        if (userDiv) {
+          let parentDiv = userDiv.closest('.videos_data');
+          if (parentDiv) {
+            parentDiv.remove();
+          }
+        }
+      });
+
+      socket.on('startshare', ({ share }) => {
+        // let userDiv = document.getElementById(share.userId);
+        let userDiv = document.querySelector(`video[data-stream-id="${share.userId}_screenshare"]`);
+        if (userDiv) {
+          let parentDiv = userDiv.closest('.videos_data');
+          if (parentDiv && share.share == true) {
+            parentDiv.classList.add('screen-share');
+          } else {
+            parentDiv.remove();
+            // parentDiv.classList.remove('screen-share');
+          }
+        }
+      });
     });
-  });
 };
 
 startVideoStream();
+
+
+socket.on("update-playstop", (data) => {
+  let videoElement = document.querySelector(`video[data-stream-id="${data.userId}"]`);
+  if (videoElement) {
+    let parentDiv = videoElement.closest('.videos_data');
+    let overlays = parentDiv.querySelectorAll(".overlasy"); // Get all overlays
+
+    overlays.forEach(overlay => { 
+      if (data.screenblack === true) {
+        overlay.classList.replace('overlasy', 'overlay'); // Replace class correctly
+      } else {
+        overlay.classList.replace('overlay', 'overlasy'); // Ensure it toggles back properly
+      }
+    });
+  }
+});
 
 
 
@@ -201,24 +218,24 @@ startVideoStream();
 peer.on("call", function (call) {
   const localuser = { name: username };
   console.log('call:', localuser);
-    getUserMedia({ video: true, audio: true },
-        function (stream) {
-          call.answer(stream, {
-            metadata: localuser
-          });
-          const video = addStreamDiv(false);
-          const remoteUsername = call.metadata.name;
-          call.on("stream", function (remoteStream) {
-            addVideoStream(video, remoteStream, call.peer, remoteUsername);
-          });
-        },
-      function (err) {
-        console.log("Failed to get local stream", err);
-      }
-    );
-    connectedPeers[call.peer] = call;
-    activeCalls.push(call);
-  });
+  getUserMedia({ video: true, audio: true },
+    function (stream) {
+      call.answer(stream, {
+        metadata: localuser
+      });
+      const video = addStreamDiv(false);
+      const remoteUsername = call.metadata.name;
+      call.on("stream", function (remoteStream) {
+        addVideoStream(video, remoteStream, call.peer, remoteUsername);
+      });
+    },
+    function (err) {
+      console.log("Failed to get local stream", err);
+    }
+  );
+  connectedPeers[call.peer] = call;
+  activeCalls.push(call);
+});
 
 // peer.on("open", (id) => {
 //   socket.emit("join-room", ROOM_ID, USERNAME, id);
@@ -271,13 +288,14 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
 
   const streamIdDiv = videoContainer.querySelectorAll(".user_name")[0]; // First div for stream ID
   const muteStatusDiv = videoContainer.querySelectorAll(".user_name")[1]; // Second div for mute status
-
+  muteStatusDiv.classList.add('micbutton');
+  streamIdDiv.classList.add('micbutton');
   streamIdDiv.innerText = streamuser;
 
   const audioTracks = stream.getAudioTracks();
   if (audioTracks.length > 0) {
-    muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
-    muteStatusDiv.id = peerid;
+     muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
+     muteStatusDiv.id = peerid;
   }
 
   videoEl.addEventListener("loadedmetadata", () => {
@@ -307,7 +325,7 @@ const screenShare = () => {
   if (!screenSharing) {
     screenSharing = true;
 
-     navigator.mediaDevices.getDisplayMedia({ video: true, audio: false })
+    navigator.mediaDevices.getDisplayMedia({ video: true, audio: false })
       .then(screenStream => {
         screenShareStream = screenStream;
         const videoTrack = screenStream.getVideoTracks()[0];
@@ -357,12 +375,16 @@ function stopScreenSharing() {
 }
 
 const playStop = () => {
+
   const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
     console.log(videoTracks);
     videoTracks.forEach(track => track.stop());
     setPlayVideo();
+
+
+    socket.emit("playStop", { screenblack: true, userId: peer.id });
 
   } else {
     myVideoStream.getTracks().forEach(track => track.stop());
@@ -397,11 +419,13 @@ const muteUnmute = () => {
   const enabled = myVideoStream.getAudioTracks()[0].enabled;
   const myMuteStatusDiv = document.querySelector("#video-grid .videos_data:first-child .user_name:nth-child(3)");
   if (enabled) {
+
     myVideoStream.getAudioTracks()[0].enabled = false;
     setUnmuteButton();
     myMuteStatusDiv.innerText = 'Muted';
     socket.emit("mute-status-changed", { muted: '<i class="unmute fa fa-microphone-slash"></i>', userId: myMuteStatusDiv.id });
   } else {
+
     setMuteButton();
     myMuteStatusDiv.innerText = 'Unmuted';
     myVideoStream.getAudioTracks()[0].enabled = true;
@@ -428,6 +452,7 @@ const setUnmuteButton = () => {
   <span class="unmute">Unmute</span>`;
   document.getElementById("muteButton").innerHTML = html;
 };
+
 const setMuteButton = () => {
   const html = `<i class="fa fa-microphone"></i>
   <span>Mute</span>`;
@@ -473,6 +498,10 @@ const addStreamDiv = (isMyVideo = false) => {
   userName2Div.classList.add('user_name');
   videosDataDiv.appendChild(userName2Div);
 
+  const overlay = document.createElement("div");
+  overlay.className = "overlasy";
+  videosDataDiv.appendChild(overlay);
+
   return videosDataDiv;
 
 }
@@ -487,6 +516,48 @@ const leaveMeeting = () => {
 }
 
 
+const toggleRemoteMic = (peerId) => {
+  console.log('Attempting to toggle mic for peerId:', peerId);
+  console.log('Active calls:', activeCalls);
+  const call = activeCalls.find(call => call.peer === peerId);
 
+  if (!call) {
+    console.error('Call not found for peer:', peerId);
+    return;
+  }
+
+  console.log('Found call:', call);
+
+  const sender = call.peerConnection.getSenders().find(sender => sender.track.kind === 'audio');
+  if (!sender) {
+    console.error('Audio track not found for peer:', peerId);
+    return;
+  }
+
+  const audioTrack = sender.track;
+  audioTrack.enabled = !audioTrack.enabled;
+  const muteStatusDiv = document.getElementById(peerId);
+  if (muteStatusDiv) {
+    muteStatusDiv.innerHTML = audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
+  } else {
+    console.error('Mute status div not found for peer:', peerId);
+  }
+
+  socket.emit("mute-status-changed", { muted: audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>', userId: peerId });
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+  const videoGrid = document.getElementById("video-grid");
+
+  videoGrid.addEventListener("click", function (event) {
+    const micButton = event.target.closest(".micbutton"); // Find closest mic button
+    if (micButton) {
+      console.log("Clicked mic button ID:", micButton.id);
+
+      // alert(micButton.id);
+      toggleRemoteMic(micButton.id);
+    }
+  });
+});
 
 
