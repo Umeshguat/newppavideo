@@ -305,9 +305,9 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   videoGrid.append(videoContainer);
 
   
-  const overlay = document.createElement("div");
-  overlay.className = "overlay";
-  videoContainer.appendChild(overlay);
+  // const overlay = document.createElement("div");
+  // overlay.className = "overlay";
+  // videoContainer.appendChild(overlay);
 
 
   let totalUsers = document.getElementsByTagName("video").length;
