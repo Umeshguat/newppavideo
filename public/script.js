@@ -272,6 +272,8 @@ const addVideoStream = (videoContainer, stream, peerid, streamuser) => {
   const streamIdDiv = videoContainer.querySelectorAll(".user_name")[0]; // First div for stream ID
   const muteStatusDiv = videoContainer.querySelectorAll(".user_name")[1]; // Second div for mute status
 
+  muteStatusDiv.classList.add('micbutton'); 
+
   streamIdDiv.innerText = streamuser;
 
   const audioTracks = stream.getAudioTracks();
@@ -481,5 +483,48 @@ const leaveMeeting = () => {
 
 
 
+const toggleRemoteMic = (peerId) => {
+  console.log('Attempting to toggle mic for peerId:', peerId);
+  console.log('Active calls:', activeCalls);
+  const call = activeCalls.find(call => call.peer === peerId);
+
+  if (!call) {
+    console.error('Call not found for peer:', peerId);
+    return;
+  }
+
+  console.log('Found call:', call);
+
+  const sender = call.peerConnection.getSenders().find(sender => sender.track.kind === 'audio');
+  if (!sender) {
+    console.error('Audio track not found for peer:', peerId);
+    return;
+  }
+
+  const audioTrack = sender.track;
+  audioTrack.enabled = !audioTrack.enabled;
+  const muteStatusDiv = document.getElementById(peerId);
+  if (muteStatusDiv) {
+    muteStatusDiv.innerHTML = audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
+  } else {
+    console.error('Mute status div not found for peer:', peerId);
+  }
+
+  socket.emit("mute-status-changed", { muted: audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>', userId: peerId });
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+  const videoGrid = document.getElementById("video-grid");
+
+  videoGrid.addEventListener("click", function (event) {
+      const micButton = event.target.closest(".micbutton"); // Find closest mic button
+      if (micButton) {
+          console.log("Clicked mic button ID:", micButton.id);
+
+          // alert(micButton.id);
+          toggleRemoteMic(micButton.id);
+      }
+  });
+});
 
 
