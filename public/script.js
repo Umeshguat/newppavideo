@@ -379,7 +379,7 @@ const playStop = () => {
   const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
-    console.log(videoTracks);
+    // console.log(videoTracks);
     videoTracks.forEach(track => track.stop());
     setPlayVideo();
 
@@ -405,8 +405,10 @@ const playStop = () => {
 
         peerid = peer.id;
         const videoElement = document.querySelector(`video[data-stream-id="${peerid}"]`);
+       
         if (videoElement) {
           videoElement.srcObject = myVideoStream; // Re-assign stream to video element
+          socket.emit("playStop", { screenblack: false, userId: peer.id });
           videoElement.play().catch(err => console.error("Error playing video:", err));
         }
       })
@@ -511,40 +513,62 @@ const addStreamDiv = (isMyVideo = false) => {
 //leavemeeting 
 const leaveMeeting = () => {
 
-  window.location.href = 'https://conference.vijayabooks.in';
+  window.location.href = 'https://newppavideo.onrender.com/';
   socket.emit("leavemeeting", peer.id);
 }
 
 
+// const toggleRemoteMic = (peerId) => {
+//   console.log('Attempting to toggle mic for peerId:', peerId);
+//   console.log('Active calls:', activeCalls);
+//   const call = activeCalls.find(call => call.peer === peerId);
+
+//   if (!call) {
+//     console.error('Call not found for peer:', peerId);
+//     return;
+//   }
+
+//   console.log('Found call:', call);
+
+//   const sender = call.peerConnection.getSenders().find(sender => sender.track.kind === 'audio');
+//   if (!sender) {
+//     console.error('Audio track not found for peer:', peerId);
+//     return;
+//   }
+
+//   const audioTrack = sender.track;
+//   audioTrack.enabled = !audioTrack.enabled;
+//   const muteStatusDiv = document.getElementById(peerId);
+//   if (muteStatusDiv) {
+//     muteStatusDiv.innerHTML = audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
+//   } else {
+//     console.error('Mute status div not found for peer:', peerId);
+//   }
+
+//   socket.emit("mute-status-changed", { muted: audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>', userId: peerId });
+// }
+
 const toggleRemoteMic = (peerId) => {
   console.log('Attempting to toggle mic for peerId:', peerId);
-  console.log('Active calls:', activeCalls);
-  const call = activeCalls.find(call => call.peer === peerId);
-
-  if (!call) {
-    console.error('Call not found for peer:', peerId);
-    return;
-  }
-
-  console.log('Found call:', call);
-
-  const sender = call.peerConnection.getSenders().find(sender => sender.track.kind === 'audio');
-  if (!sender) {
-    console.error('Audio track not found for peer:', peerId);
-    return;
-  }
-
-  const audioTrack = sender.track;
-  audioTrack.enabled = !audioTrack.enabled;
-  const muteStatusDiv = document.getElementById(peerId);
-  if (muteStatusDiv) {
-    muteStatusDiv.innerHTML = audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
-  } else {
-    console.error('Mute status div not found for peer:', peerId);
-  }
-
-  socket.emit("mute-status-changed", { muted: audioTrack.enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>', userId: peerId });
+  socket.emit("toggle-remote-mic", { peerId });
 };
+
+
+socket.on("toggle-remote-mic", ({ peerId }) => {
+
+  console.log('Attempting to toggle mic for peerId remote:', peerId);
+  if (peer.id === peerId) {
+    const audioTracks = myVideoStream.getAudioTracks();
+    if (audioTracks.length > 0) {
+      audioTracks[0].enabled = !audioTracks[0].enabled;
+      const muteStatusDiv = document.getElementById(peerId);
+      if (muteStatusDiv) {
+        muteStatusDiv.innerHTML = audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>';
+      }
+      socket.emit("mute-status-changed", { muted: audioTracks[0].enabled ? '<i class="fa fa-microphone"></i>' : '<i class="unmute fa fa-microphone-slash"></i>', userId: peerId });
+    }
+  }
+});
 
 document.addEventListener("DOMContentLoaded", function () {
   const videoGrid = document.getElementById("video-grid");
