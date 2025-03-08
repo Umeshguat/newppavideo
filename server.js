@@ -62,6 +62,10 @@ io.on("connection", (socket) => {
     socket.on("leavemeeting", (userId) => {
       io.to(roomId).emit("user-leaved-meeting",  userId);
     });
+
+    socket.on("toggle-remote-mic", (userId) => {
+      io.to(roomId).emit("update-toggle-remote-micg",  userId);
+    });
   });
 
 

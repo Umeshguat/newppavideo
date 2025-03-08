@@ -554,7 +554,7 @@ const toggleRemoteMic = (peerId) => {
 };
 
 
-socket.on("toggle-remote-mic", ({ peerId }) => {
+socket.on("update-toggle-remote-micg", ({ peerId }) => {
 
   console.log('Attempting to toggle mic for peerId remote:', peerId);
   if (peer.id === peerId) {
