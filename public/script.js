@@ -379,7 +379,7 @@ const playStop = () => {
   const videoTracks = myVideoStream ? myVideoStream.getVideoTracks() : [];
 
   if (videoTracks.length > 0 && videoTracks[0].readyState === 'live') {
-    console.log(videoTracks);
+    // console.log(videoTracks);
     videoTracks.forEach(track => track.stop());
     setPlayVideo();
 
@@ -405,8 +405,10 @@ const playStop = () => {
 
         peerid = peer.id;
         const videoElement = document.querySelector(`video[data-stream-id="${peerid}"]`);
+       
         if (videoElement) {
           videoElement.srcObject = myVideoStream; // Re-assign stream to video element
+          socket.emit("playStop", { screenblack: false, userId: peer.id });
           videoElement.play().catch(err => console.error("Error playing video:", err));
         }
       })
@@ -511,7 +513,7 @@ const addStreamDiv = (isMyVideo = false) => {
 //leavemeeting 
 const leaveMeeting = () => {
 
-  window.location.href = 'https://conference.vijayabooks.in';
+  window.location.href = 'https://newppavideo.onrender.com/';
   socket.emit("leavemeeting", peer.id);
 }
 
